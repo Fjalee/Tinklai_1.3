@@ -5,9 +5,34 @@
 #include <string.h> 
 #include <sys/socket.h> 
 #include <sys/types.h> 
-#define MAX 80 
+#define MAX 256
 #define PORT 8080 //fix put 20000
 #define SA struct sockaddr
+
+void comm(int sockfd){
+    char buffer[MAX];
+    int n;
+
+    for(;;){
+        bzero(buffer, MAX);
+
+        read(sockfd, buffer, sizeof(buffer));
+
+        printf("From client received: %s\t", buffer);
+        bzero(buffer, MAX);
+        n = 0;
+
+        while ((buffer[n++] = getchar()) != '\n');
+
+        write(sockfd, buffer, sizeof(buffer));
+
+        if (0 == strncmp("exit", buffer, 4)){
+            printf("Server Exit...\n");
+            break;
+        }
+    }
+    
+}
 
 void error(char *msg){
     printf("%s\n", msg);
@@ -15,9 +40,8 @@ void error(char *msg){
 }
 
 int main() {
-    int sockfd, newsockfd, connfd, clilen;
-    char buffer[256];
-    struct sockaddr_in servaddr, cli_addr;
+    int sockfd, connfd, len;
+    struct sockaddr_in servaddr, cli;
     int n;
 
     ////socket/////
@@ -35,51 +59,36 @@ int main() {
 
     /////assign IP, PORT/////
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = INADDR_ANY;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(PORT);
     /////assign IP, PORT/////
 
     // /////Binding newly created socket to given IP and verification//////
     if (0 != (bind(sockfd, (SA*)&servaddr, sizeof(servaddr)))){
-        printf("socket bind failed...\n");
-        exit(0);
+        error("Socket bind failed...");
     }
+    else 
+        printf("Socket successfully binded...\n");
     ///////Binding newly created socket to given IP and verification//////
 
     ///////////Listen///////////
-    listen(sockfd, 5);
-    clilen = sizeof(cli_addr);
-
-    newsockfd= accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-
-    if (newsockfd < 0){
-        printf("accepting client failed...\n");
-        exit(0);
+    if (0 != listen(sockfd, 5)){
+        error("Listen failed...\n");
     }
+    else
+        printf("Server listening...\n");
+    len = sizeof(cli);
 
-    bzero(buffer, 256);
-
-    n = read(newsockfd, buffer, 255);
-
-    if (0 > n){
-        error("Reading failed...\n");
+    connfd = accept(sockfd, (struct sockaddr *) &cli, &len);
+    if (connfd < 0){
+        error("Server accept failed...\n");
     }
+    else
+        printf("Server accepted successfully...\n");
 
-    printf("Here is the message: %s\n", buffer);
+    comm(connfd);
 
-    n = write(newsockfd, "I got your message", 18);
-
-    if(n < 0){
-        error("error writting");
-    }
-
-
-    ///////////Listen///////////
-
-
-    
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    close(sockfd);
 
 
    return 0;
