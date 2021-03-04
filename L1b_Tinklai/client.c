@@ -3,6 +3,8 @@
 #include <stdlib.h> 
 #include <string.h> 
 #include <sys/socket.h> 
+#include <arpa/inet.h>
+#include <unistd.h>
 #define MAX 80 
 #define PORT 8080 
 #define SA struct sockaddr 
@@ -18,8 +20,8 @@ void comm(int sockfd){
       write(sockfd, buffer, sizeof(buffer));
       bzero(buffer, sizeof(buffer));
       read(sockfd, buffer, sizeof(buffer));
-      printf("Server message: %s", buffer);
-      if (0 == (strncmp(buffer, 'exit', 4))){
+      printf("Server message: %s\n", buffer);
+      if (0 == (strncmp(buffer, "exit", 4))){
          printf("Client Exit...\n");
          break;
       }
@@ -28,10 +30,10 @@ void comm(int sockfd){
 
 void error(char *msg){
     printf("%s\n", msg);
-    exit(0);
+    exit(1);
 }
 
-int main(){
+int main(int agrc, char *argv[]){
    int sockfd, connfd;
    struct sockaddr_in servaddr, cli;
 
@@ -48,15 +50,13 @@ int main(){
    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
    servaddr.sin_port = htons(PORT);
 
-   if (0 != connect(sockfd, (struct sockaddr_in*) &servaddr, sizeof(servaddr))){
+   if (0 != connect(sockfd, (struct sockaddr*) &servaddr, sizeof(servaddr))){
       error("Connecting to server failed...\n");
    }
    else
       printf("Successfully connected to server...\n");
 
    comm(sockfd);
-   
-   close(sockfd);
 
    return 0;
 }
