@@ -5,6 +5,8 @@
 #include <string.h> 
 #include <sys/socket.h> 
 #include <sys/types.h> 
+#include <arpa/inet.h>
+#include <unistd.h>
 #define MAX 256
 #define PORT 8080 //fix put 20000
 #define SA struct sockaddr
@@ -13,25 +15,17 @@ void comm(int sockfd){
     char buffer[MAX];
     int n;
 
-    for(;;){
-        bzero(buffer, MAX);
+    bzero(buffer, MAX);
 
-        read(sockfd, buffer, sizeof(buffer));
+    read(sockfd, buffer, sizeof(buffer));
 
-        printf("From client received: %s\t", buffer);
-        bzero(buffer, MAX);
-        n = 0;
+    printf("From client received: %s\n", buffer);
+    bzero(buffer, MAX);
+    n = 0;
 
-        while ((buffer[n++] = getchar()) != '\n');
-
-        write(sockfd, buffer, sizeof(buffer));
-
-        if (0 == strncmp("exit", buffer, 4)){
-            printf("Server Exit...\n");
-            break;
-        }
-    }
-    
+    printf("Enter the message: ");
+    while ((buffer[n++] = getchar()) != '\n');
+    write(sockfd, buffer, sizeof(buffer));
 }
 
 void error(char *msg){
@@ -47,7 +41,7 @@ int main() {
     ////socket/////
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (0 > sockfd){
-        printf("socket creation failed...\n");
+        printf("Socket creation failed...\n");
         exit(0);
     }
     else
@@ -89,7 +83,4 @@ int main() {
     comm(connfd);
 
     close(sockfd);
-
-
-   return 0;
 }

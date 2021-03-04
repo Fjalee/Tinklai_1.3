@@ -12,20 +12,15 @@
 void comm(int sockfd){
    char buffer[MAX];
    int n;
-   for(;;){
-      bzero(buffer, sizeof(buffer));
-      printf("Enter the message: ");
-      n = 0;
-      while(buffer[n++] = getchar() != '\n');
-      write(sockfd, buffer, sizeof(buffer));
-      bzero(buffer, sizeof(buffer));
-      read(sockfd, buffer, sizeof(buffer));
-      printf("Server message: %s\n", buffer);
-      if (0 == (strncmp(buffer, "exit", 4))){
-         printf("Client Exit...\n");
-         break;
-      }
-   }
+
+   bzero(buffer, sizeof(buffer));
+   printf("Enter the message: ");
+   n = 0;
+   while((buffer[n++] = getchar()) != '\n');
+   write(sockfd, buffer, sizeof(buffer));
+   bzero(buffer, sizeof(buffer));
+   read(sockfd, buffer, sizeof(buffer));
+   printf("Server message: %s\n", buffer);
 }
 
 void error(char *msg){
@@ -58,5 +53,5 @@ int main(int agrc, char *argv[]){
 
    comm(sockfd);
 
-   return 0;
+   close(sockfd);
 }
