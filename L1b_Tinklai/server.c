@@ -31,7 +31,7 @@ void error(char *msg){
     exit(0);
 }
 
-int main() {
+int main(int agrc, char *argv[]) {
     int sockfd, connfd, len;
     struct sockaddr_in servaddr, cliaddr;
     int n;
@@ -47,7 +47,7 @@ int main() {
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(PORT);
 
-    if (0 != (bind(sockfd, (struct sockaddr_in*)&servaddr, sizeof(servaddr))))
+    if (0 != (bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))))
         error("Socket bind failed...\n");
     else 
         printf("Socket successfully binded...\n");
