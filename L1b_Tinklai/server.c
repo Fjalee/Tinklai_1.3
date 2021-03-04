@@ -7,6 +7,7 @@
 #include <sys/types.h> 
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <ctype.h>
 #define MAX 256
 #define PORT 20000
 
@@ -19,10 +20,10 @@ void comm(int sockfd){
 
     printf("From client received: %s\n", buffer);
 
-    n = 0;
-    bzero(buffer, MAX);
-    printf("Enter the message: ");
-    while ((buffer[n++] = getchar()) != '\n');
+    for(int i=0; i<strlen(buffer); i++){
+        buffer[i] = toupper(buffer[i]);
+    }
+
     write(sockfd, buffer, sizeof(buffer));
 }
 
