@@ -7,10 +7,9 @@
 #include <sys/types.h> 
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <ctype.h>
 
 #define MAX 256
-#define PORT 20000
+#define PORT "20000"
 #define BACKLOG 10
 
 void comm(int clifd){
@@ -22,10 +21,10 @@ void error(char *msg){
     exit(0);
 }
 
-int main(int agrc, char *argv[]) {
+int main(){
     struct sockaddr_storage cli_addr;
     socklen_t addr_size;
-    struct addrinfo hints, *servinfo;
+    struct addrinfo hints, *servinfo, *i;
     int sockfd, new_fd;
 
     memset(&hints, 0, sizeof hints);
@@ -33,6 +32,8 @@ int main(int agrc, char *argv[]) {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
     getaddrinfo(NULL, PORT, &hints, &servinfo);
+
+    
 
     for (i = servinfo; i != NULL; i = i->ai_next) {
         sockfd = socket(i->ai_family, i->ai_socktype, i->ai_protocol);
@@ -44,21 +45,22 @@ int main(int agrc, char *argv[]) {
     }
     freeaddrinfo(servinfo);
     if (i == NULL)
-        error("Bind failed...");
+        error("Bind failed...\n");
     else
-        printf("Successfully binded...");
+        printf("Successfully binded...\n");
 
 
-    if (listen(sockfd, BACKLOG)){
-        printf("Listening...");
-    }
+    if (listen(sockfd, BACKLOG) == 0)
+        printf("Listening...\n");
 
     addr_size = sizeof cli_addr;
     new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
-    printf("Successfully accepted...");
+    printf("Successfully accepted...\n");
 
 
     close(sockfd);
+    
+    return 0;
 }
 
 
