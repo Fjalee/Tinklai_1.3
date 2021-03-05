@@ -48,6 +48,7 @@ int main(int agrc, char *argv[]) {
     else
         printf("Successfully binded...");
 
+
     if (listen(sockfd, BACKLOG)){
         printf("Listening...");
     }
@@ -55,6 +56,7 @@ int main(int agrc, char *argv[]) {
     addr_size = sizeof cli_addr;
     new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
     printf("Successfully accepted...");
+
 
     close(sockfd);
 }
