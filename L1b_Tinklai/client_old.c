@@ -39,7 +39,7 @@ int main(int agrc, char *argv[]){
       printf("Socket created successfully..\n");
 
    bzero(&servaddr, sizeof(servaddr));
-   servaddr.sin_family = AF_INET6;
+   servaddr.sin_family = AF_INET;
    servaddr.sin_addr.s_addr = inet_addr("::1");
    servaddr.sin_port = htons(PORT);
 

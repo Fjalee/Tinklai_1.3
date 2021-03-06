@@ -21,14 +21,14 @@ void error(char *msg){
     exit(0);
 }
 
-int main(){
+int main(int agrc, char *argv[]){
     struct sockaddr_storage cli_addr;
     socklen_t addr_size;
     struct addrinfo hints, *servinfo, *i;
     int sockfd, new_fd;
 
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = AF_INET6;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
     getaddrinfo(NULL, PORT, &hints, &servinfo);
