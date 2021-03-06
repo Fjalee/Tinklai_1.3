@@ -12,16 +12,27 @@
 #define PORT "20000"
 #define BACKLOG 10
 
-void comm(int clifd){
-
-}
-
 void error(char *msg){
     printf("%s\n", msg);
     exit(0);
 }
 
-int main(int agrc, char **argv){
+void comm(int sockfd){
+    char *buff;
+    int len;
+
+    printf("Send: ");
+    bzero(buff, MAX);
+    scanf("%s", buff);
+
+    if (send(sockfd, buff, sizeof(buff), 0) < 0)
+        error("Sending failed...");
+
+    recv(sockfd, buff, sizeof(buff), 0);
+    printf("Received: %s\n", buff);
+}
+
+int main(/*int agrc, char **argv*/){
     struct sockaddr_storage cli_addr;
     socklen_t addr_size;
     struct addrinfo hints, *servinfo, *i;
@@ -31,7 +42,7 @@ int main(int agrc, char **argv){
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    getaddrinfo(argv[1], PORT, &hints, &servinfo);
+    getaddrinfo("127.0.0.1"/*argv[1]*/, PORT, &hints, &servinfo);
 
     for (i = servinfo; i != NULL; i = i->ai_next) {
         sockfd = socket(i->ai_family, i->ai_socktype, i->ai_protocol);
@@ -48,8 +59,10 @@ int main(int agrc, char **argv){
     else
         printf("Successfully connected...\n");
 
+    comm(sockfd);
 
     close(sockfd);
     
+    printf("\n");
     return 0;
 }

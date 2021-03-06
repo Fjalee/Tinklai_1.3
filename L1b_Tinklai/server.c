@@ -1,4 +1,5 @@
 #include <stdio.h> 
+#include <ctype.h>
 #include <netdb.h> 
 #include <netinet/in.h> 
 #include <stdlib.h> 
@@ -12,8 +13,22 @@
 #define PORT "20000"
 #define BACKLOG 10
 
-void comm(int clifd){
+void strToUpper(char *str){
+    for (int i; i <= strlen(str); i++){
+        str[i] = toupper(str[i]);
+    }
+}
 
+void comm(int clifd){
+    char buff[MAX];
+    bzero(buff, MAX);
+    recv(clifd, buff, sizeof(buff), 0);
+
+    printf("Received: %s\n", buff);
+    strToUpper(buff);
+    printf("Sending: %s\n", buff);
+
+    send(clifd, buff, sizeof(buff), 0);
 }
 
 void error(char *msg){
@@ -21,7 +36,7 @@ void error(char *msg){
     exit(0);
 }
 
-int main(int agrc, char *argv[]){
+int main(/*int agrc, char *argv[]*/){
     struct sockaddr_storage cli_addr;
     socklen_t addr_size;
     struct addrinfo hints, *servinfo, *i;
@@ -57,9 +72,11 @@ int main(int agrc, char *argv[]){
     new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
     printf("Successfully accepted...\n");
 
+    comm(new_fd);
 
     close(sockfd);
     
+    printf("\n");
     return 0;
 }
 
