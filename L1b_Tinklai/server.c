@@ -9,9 +9,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define MAX 256
 #define PORT "20000"
 #define BACKLOG 10
+#define MAXLEN 10000
 
 void strToUpper(char *str){
     for (int i; i <= strlen(str); i++){
@@ -20,15 +20,15 @@ void strToUpper(char *str){
 }
 
 void comm(int clifd){
-    char buff[MAX];
-    bzero(buff, MAX);
-    recv(clifd, buff, sizeof(buff), 0);
+    char buff[MAXLEN];
+    bzero(buff, MAXLEN);
+    recv(clifd, buff, MAXLEN, 0);
 
     printf("Received: %s\n", buff);
     strToUpper(buff);
     printf("Sending: %s\n", buff);
 
-    send(clifd, buff, sizeof(buff), 0);
+    send(clifd, buff, MAXLEN, 0);
 }
 
 void error(char *msg){
@@ -75,6 +75,7 @@ int main(int agrc, char *argv[]){
     comm(new_fd);
 
     close(sockfd);
+    close(new_fd);
     
     printf("\n");
     return 0;

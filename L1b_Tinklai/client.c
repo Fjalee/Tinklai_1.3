@@ -8,9 +8,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define MAX 256
 #define PORT "20000"
 #define BACKLOG 10
+#define MAXLEN 10000
 
 void error(char *msg){
     printf("%s\n", msg);
@@ -18,17 +18,17 @@ void error(char *msg){
 }
 
 void comm(int sockfd){
-    char *buff;
-    int len;
+    char buff[MAXLEN];
+    int n;
 
     printf("Send: ");
-    bzero(buff, MAX);
-    scanf("%s", buff);
+    bzero(buff, MAXLEN);
+    while((buff[n++] = getchar()) != '\n');
 
-    if (send(sockfd, buff, sizeof(buff), 0) < 0)
+    if (send(sockfd, buff, MAXLEN, 0) < 0)
         error("Sending failed...");
 
-    recv(sockfd, buff, sizeof(buff), 0);
+    recv(sockfd, buff, MAXLEN, 0);
     printf("Received: %s\n", buff);
 }
 
@@ -62,7 +62,5 @@ int main(int agrc, char **argv){
     comm(sockfd);
 
     close(sockfd);
-    
-    printf("\n");
     return 0;
 }
