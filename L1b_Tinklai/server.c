@@ -36,7 +36,7 @@ void error(char *msg){
     exit(0);
 }
 
-int main(/*int agrc, char *argv[]*/){
+int main(int agrc, char *argv[]){
     struct sockaddr_storage cli_addr;
     socklen_t addr_size;
     struct addrinfo hints, *servinfo, *i;

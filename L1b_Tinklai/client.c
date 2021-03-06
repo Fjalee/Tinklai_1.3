@@ -32,7 +32,7 @@ void comm(int sockfd){
     printf("Received: %s\n", buff);
 }
 
-int main(/*int agrc, char **argv*/){
+int main(int agrc, char **argv){
     struct sockaddr_storage cli_addr;
     socklen_t addr_size;
     struct addrinfo hints, *servinfo, *i;
@@ -42,7 +42,7 @@ int main(/*int agrc, char **argv*/){
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    getaddrinfo("127.0.0.1"/*argv[1]*/, PORT, &hints, &servinfo);
+    getaddrinfo(argv[1], PORT, &hints, &servinfo);
 
     for (i = servinfo; i != NULL; i = i->ai_next) {
         sockfd = socket(i->ai_family, i->ai_socktype, i->ai_protocol);
