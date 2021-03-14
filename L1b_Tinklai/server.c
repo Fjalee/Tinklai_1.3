@@ -43,7 +43,7 @@ int main(int agrc, char *argv[]){
     int sockfd, new_fd;
 
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET6;
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
     getaddrinfo(NULL, PORT, &hints, &servinfo);
