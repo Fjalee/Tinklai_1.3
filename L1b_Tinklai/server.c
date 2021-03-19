@@ -43,6 +43,32 @@ int connectToSndServer(){
         return sockfd;
 }
 
+int createSocket(char *port){
+    struct addrinfo hints, *servinfo, *i;
+    int sockfd;
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET6;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    getaddrinfo(NULL, port, &hints, &servinfo);
+    
+    for (i = servinfo; i != NULL; i = i->ai_next) {
+        sockfd = socket(i->ai_family, i->ai_socktype, i->ai_protocol);
+        if (sockfd == -1)
+            continue;
+
+        if (bind(sockfd, i->ai_addr, i->ai_addrlen) == 0)
+            break;
+    }
+    freeaddrinfo(servinfo);
+
+    if (i == NULL)
+        return -1;         //binding failed, ether something went wrong or port taken by another server
+    else
+        return sockfd;
+}
+
 void strToUpper(char *str){
     for (int i; i <= strlen(str); i++){
         str[i] = toupper(str[i]);
@@ -72,27 +98,12 @@ int main(int agrc, char *argv[]){
     struct addrinfo hints, *servinfo, *i;
     int sockfd, new_fd, im_clientfd = 0;
 
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET6;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-    getaddrinfo(NULL, PORT_BS, &hints, &servinfo);
 
-    
 
-    for (i = servinfo; i != NULL; i = i->ai_next) {
-        sockfd = socket(i->ai_family, i->ai_socktype, i->ai_protocol);
-        if (sockfd == -1)
-            continue;
 
-        if (bind(sockfd, i->ai_addr, i->ai_addrlen) == 0)
-            break;
-    }
-    freeaddrinfo(servinfo);
-
-    if (i == NULL){
+    if (-1 == (sockfd = createSocket(PORT_BS))){
         if (-1 != (im_clientfd = connectToSndServer()))
-            printf("Successfully connected...\n");
+            printf("Successfully connected to anotehr server...\n");
         else
             error("Binding failed...\n");
     }
@@ -105,7 +116,7 @@ int main(int agrc, char *argv[]){
 
     addr_size = sizeof cli_addr;
     new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
-    printf("Successfully accepted...\n");
+    printf("Successfully accepted another server...\n");
 
     comm(new_fd);
 
