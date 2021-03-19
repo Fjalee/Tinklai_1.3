@@ -107,16 +107,14 @@ int main(int agrc, char *argv[]){
         else
             error("Binding failed...\n");
     }
-    else
+    else{
         printf("Successfully binded...\n");
-
-
-    if (listen(sockfd, BACKLOG) == 0)
-        printf("Listening...\n");
-
-    addr_size = sizeof cli_addr;
-    new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
-    printf("Successfully accepted another server...\n");
+        if (listen(sockfd, BACKLOG) == 0)
+            printf("Listening to another server...\n");
+        addr_size = sizeof cli_addr;
+        new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
+        printf("Successfully accepted another server...\n");
+    }
 
     comm(new_fd);
 
