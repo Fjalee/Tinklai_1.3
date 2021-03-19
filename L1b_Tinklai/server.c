@@ -40,7 +40,7 @@ int createSocket(char *port){
         return sockfd;
 }
 
-void listenForClient(char *port){
+int listenForClient(char *port){
     struct sockaddr_storage cli_addr;
     socklen_t addr_size;
     int sockfd, new_fd;
@@ -60,6 +60,8 @@ void listenForClient(char *port){
     addr_size = sizeof cli_addr;
     new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
     printf("Successfully accepted on port %s...\n", port);
+
+    return new_fd;
 }
 
 int connectToSndServer(){
@@ -118,8 +120,8 @@ int main(int agrc, char *argv[]){
     socklen_t addr_size, bs_addr_size;
     struct addrinfo hints, *servinfo, *i;
     int bs_sockfd, bs_clientfd = 0;
-    int sockfd, new_fd;
     int ro_cli_sockfd;    //read-only client
+    int cli_sockfd;    //regular client
 
 
     if (-1 == (bs_sockfd = createSocket(PORT_BS))){
@@ -139,33 +141,14 @@ int main(int agrc, char *argv[]){
         printf("Successfully accepted another server...\n");
     }
 
-    
-    if (-1 == (sockfd = createSocket(argv[1])))
-        error("Binding failed...\n");
-    else
-        printf("Successfully binded...\n");
+    ro_cli_sockfd = listenForClient(argv[1]);
+    cli_sockfd = listenForClient(argv[2]);
 
-
-    if (listen(sockfd, BACKLOG) == 0)
-        printf("Listening for clients...\n");
-
-    addr_size = sizeof cli_addr;
-    new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
-    printf("Successfully accepted another server...\n");
-
-
-    
-
-    
-    
-
-
-
-
-    comm(new_fd);
+    //comm(new_fd);
 
     close(bs_sockfd);
-    close(new_fd);
+    close(ro_cli_sockfd);
+    close(cli_sockfd);
     
     printf("\n");
     return 0;
