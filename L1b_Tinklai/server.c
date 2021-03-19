@@ -10,8 +10,38 @@
 #include <unistd.h>
 
 #define PORT "20000"
+#define PORT_BS "20082"    //port between servers
+#define PORT_OUT "22222"    //port for output only client
 #define BACKLOG 10
 #define MAXLEN 10000
+
+int connectToSndServer(){
+    struct sockaddr_storage cli_addr;
+    socklen_t addr_size;
+    struct addrinfo hints, *servinfo, *i;
+    int sockfd, new_fd;
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    getaddrinfo("::1", PORT_BS, &hints, &servinfo);
+
+    for (i = servinfo; i != NULL; i = i->ai_next) {
+        sockfd = socket(i->ai_family, i->ai_socktype, i->ai_protocol);
+        if (sockfd == -1)
+            continue;
+
+        if (-1 != connect(sockfd, i->ai_addr, i->ai_addrlen))
+            break;
+    }
+    freeaddrinfo(servinfo);
+
+    if (i == NULL)
+        return -1;
+    else
+        return sockfd;
+}
 
 void strToUpper(char *str){
     for (int i; i <= strlen(str); i++){
@@ -40,13 +70,13 @@ int main(int agrc, char *argv[]){
     struct sockaddr_storage cli_addr;
     socklen_t addr_size;
     struct addrinfo hints, *servinfo, *i;
-    int sockfd, new_fd;
+    int sockfd, new_fd, im_clientfd = 0;
 
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
+    hints.ai_family = AF_INET6;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    getaddrinfo(NULL, PORT, &hints, &servinfo);
+    getaddrinfo(NULL, PORT_BS, &hints, &servinfo);
 
     
 
@@ -59,8 +89,13 @@ int main(int agrc, char *argv[]){
             break;
     }
     freeaddrinfo(servinfo);
-    if (i == NULL)
-        error("Bind failed...\n");
+
+    if (i == NULL){
+        if (-1 != (im_clientfd = connectToSndServer()))
+            printf("Successfully connected...\n");
+        else
+            error("Binding failed...\n");
+    }
     else
         printf("Successfully binded...\n");
 
