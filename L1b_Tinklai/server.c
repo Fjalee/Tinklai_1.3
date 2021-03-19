@@ -15,6 +15,28 @@
 #define BACKLOG 10
 #define MAXLEN 10000
 
+void listenForClient(char *port){
+    struct sockaddr_storage cli_addr;
+    socklen_t addr_size;
+    int sockfd, new_fd;
+    int x=1;
+
+    if (-1 == (sockfd = createSocket(port))){
+        printf("Binding failed on port %s...\n", port);
+        exit(0);
+    }
+    else
+        printf("Successfully binded...\n");
+
+
+    if (listen(sockfd, BACKLOG) == 0)
+        printf("Listening for clients...\n");
+
+    addr_size = sizeof cli_addr;
+    new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
+    printf("Successfully accepted another server...\n");
+}
+
 int connectToSndServer(){
     struct sockaddr_storage cli_addr;
     socklen_t addr_size;
@@ -98,6 +120,7 @@ int main(int agrc, char *argv[]){
     struct addrinfo hints, *servinfo, *i;
     int bs_sockfd, bs_clientfd = 0;
     int sockfd, new_fd;
+    int ro_cli_sockfd;    //read-only client
 
 
     if (-1 == (bs_sockfd = createSocket(PORT_BS))){
@@ -130,8 +153,13 @@ int main(int agrc, char *argv[]){
     addr_size = sizeof cli_addr;
     new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
     printf("Successfully accepted another server...\n");
+
+
+    
+
     
     
+
 
 
 
