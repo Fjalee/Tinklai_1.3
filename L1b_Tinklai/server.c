@@ -128,7 +128,7 @@ int main(int agrc, char *argv[]){
         printf("Listening for clients...\n");
 
     addr_size = sizeof cli_addr;
-    new_fd = accept(bs_sockfd, (struct sockaddr *)&cli_addr, &addr_size);
+    new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
     printf("Successfully accepted another server...\n");
     
     
