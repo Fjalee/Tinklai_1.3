@@ -92,24 +92,6 @@ int connectToSndServer(){
         return sockfd;
 }
 
-void strToUpper(char *str){
-    for (int i; i <= strlen(str); i++){
-        str[i] = toupper(str[i]);
-    }
-}
-
-void comm(int clifd){
-    char buff[MAXLEN];
-    bzero(buff, MAXLEN);
-    recv(clifd, buff, MAXLEN, 0);
-
-    printf("Received: %s\n", buff);
-    strToUpper(buff);
-    printf("Sending: %s\n", buff);
-
-    send(clifd, buff, MAXLEN, 0);
-}
-
 void error(char *msg){
     printf("%s\n", msg);
     exit(0);
@@ -145,6 +127,15 @@ int main(int agrc, char *argv[]){
     cli_sockfd = listenForClient(argv[2]);
 
     //comm(new_fd);
+
+    char buff[MAXLEN];
+    bzero(buff, MAXLEN);
+    recv(cli_sockfd, buff, MAXLEN, 0);
+
+    printf("Received: %s\n", buff);
+    printf("Forwarding message: %s\n", buff);
+    send(ro_cli_sockfd, buff, MAXLEN, 0);
+
 
     close(bs_sockfd);
     close(ro_cli_sockfd);
