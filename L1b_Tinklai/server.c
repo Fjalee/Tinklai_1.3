@@ -15,6 +15,32 @@
 #define BACKLOG 10
 #define MAXLEN 10000
 
+int createSocket(char *port){
+    struct addrinfo hints, *servinfo, *i;
+    int sockfd;
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET6;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    getaddrinfo(NULL, port, &hints, &servinfo);
+    
+    for (i = servinfo; i != NULL; i = i->ai_next) {
+        sockfd = socket(i->ai_family, i->ai_socktype, i->ai_protocol);
+        if (sockfd == -1)
+            continue;
+
+        if (bind(sockfd, i->ai_addr, i->ai_addrlen) == 0)
+            break;
+    }
+    freeaddrinfo(servinfo);
+
+    if (i == NULL)
+        return -1;         //binding failed, ether something went wrong or port taken by another server
+    else
+        return sockfd;
+}
+
 void listenForClient(char *port){
     struct sockaddr_storage cli_addr;
     socklen_t addr_size;
@@ -61,32 +87,6 @@ int connectToSndServer(){
 
     if (i == NULL)
         return -1;
-    else
-        return sockfd;
-}
-
-int createSocket(char *port){
-    struct addrinfo hints, *servinfo, *i;
-    int sockfd;
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET6;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-    getaddrinfo(NULL, port, &hints, &servinfo);
-    
-    for (i = servinfo; i != NULL; i = i->ai_next) {
-        sockfd = socket(i->ai_family, i->ai_socktype, i->ai_protocol);
-        if (sockfd == -1)
-            continue;
-
-        if (bind(sockfd, i->ai_addr, i->ai_addrlen) == 0)
-            break;
-    }
-    freeaddrinfo(servinfo);
-
-    if (i == NULL)
-        return -1;         //binding failed, ether something went wrong or port taken by another server
     else
         return sockfd;
 }
