@@ -11,7 +11,6 @@
 
 #define PORT "20000"
 #define PORT_BS "20082"    //port between servers
-#define PORT_OUT "22222"    //port for output only client
 #define BACKLOG 10
 #define MAXLEN 10000
 
@@ -52,15 +51,15 @@ void listenForClient(char *port){
         exit(0);
     }
     else
-        printf("Successfully binded...\n");
+        printf("Successfully binded on port %s...\n", port);
 
 
     if (listen(sockfd, BACKLOG) == 0)
-        printf("Listening for clients...\n");
+        printf("Listening for clients on port %s...\n", port);
 
     addr_size = sizeof cli_addr;
     new_fd = accept(sockfd, (struct sockaddr *)&cli_addr, &addr_size);
-    printf("Successfully accepted another server...\n");
+    printf("Successfully accepted on port %s...\n", port);
 }
 
 int connectToSndServer(){
