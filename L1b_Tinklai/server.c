@@ -103,7 +103,7 @@ int main(int agrc, char *argv[]){
 
     if (-1 == (sockfd = createSocket(PORT_BS))){
         if (-1 != (im_clientfd = connectToSndServer()))
-            printf("Successfully connected to anotehr server...\n");
+            printf("Successfully connected to another server...\n");
         else
             error("Binding failed...\n");
     }
