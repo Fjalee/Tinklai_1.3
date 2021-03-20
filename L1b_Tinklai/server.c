@@ -12,7 +12,6 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-#define PORT "20000"
 #define PORT_BS "20082"    //port between servers
 #define BACKLOG 10
 #define MAXLEN 10000
@@ -104,52 +103,82 @@ int main(int agrc, char *argv[]){
     struct sockaddr_storage cli_addr, bs_cli_addr;
     socklen_t addr_size, bs_addr_size;
     struct addrinfo hints, *servinfo, *i;
-    int bs_sockfd, bs_clientfd = 0;
+    int bs_sockfd, sockfd;
     int ro_cli_sockfd;    //read-only client
     int cli_sockfd;    //regular client
+    char buff[MAXLEN];
 
     int fd_count = 0;
     int fd_size = 5;
     struct pollfd *pfds = malloc(sizeof *pfds * fd_size);
 
+    char *cli_port = argv[1], *ro_cli_port = argv[2];
 
-    if (-1 == (bs_sockfd = createSocket(PORT_BS))){
-        if (-1 != (bs_clientfd = connectToSndServer()))
+
+    if (-1 == (sockfd = createSocket(PORT_BS))){
+        if (-1 != (bs_sockfd = connectToSndServer())){
             printf("Successfully connected to another server...\n");
+        }
         else
             error("Binding socket for server failed ...\n");
     }
     else{
         printf("Successfully binded BS...\n");
 
-        if (listen(bs_sockfd, BACKLOG) == 0)
+        if (listen(sockfd, BACKLOG) == 0)
             printf("Listening for another server...\n");
         
         bs_addr_size = sizeof bs_cli_addr;
-        bs_sockfd = accept(bs_sockfd, (struct sockaddr *)&bs_cli_addr, &bs_addr_size);
+        bs_sockfd = accept(sockfd, (struct sockaddr *)&bs_cli_addr, &bs_addr_size);
         printf("Successfully accepted another server...\n");
+
+        pfds[0].fd = bs_sockfd;
+        pfds[0].events = POLLIN;
+        fd_count = 1;      
     }
 
-    ro_cli_sockfd = listenForClient(argv[1]);
-    cli_sockfd = listenForClient(argv[2]);
+    ro_cli_sockfd = listenForClient(ro_cli_port);
+    cli_sockfd = listenForClient(cli_port);
 
-    //comm(new_fd);
-
-    char buff[MAXLEN];
-    bzero(buff, MAXLEN);
-    recv(cli_sockfd, buff, MAXLEN, 0);
-
-    printf("Received: %s\n", buff);
-    printf("Forwarding message: %s\n", buff);
-    send(ro_cli_sockfd, buff, MAXLEN, 0);
-
-    pfds[0].fd = cli_sockfd;
-    pfds[0].events = POLLIN;
-    fd_count = 1;
+    // ro_cli_sockfd = 10;
+    // cli_sockfd = 11;
 
     pfds[0].fd = bs_sockfd;
     pfds[0].events = POLLIN;
-    fd_count = 2;
+    fd_count = 1;
+
+    pfds[fd_count].fd = cli_sockfd;
+    pfds[fd_count].events = POLLIN;
+    fd_count++;
+
+    for(;;){
+        int poll_count = poll(pfds, fd_count, -1);
+        if (poll_count == -1)
+            error("Failed creating poll...\n");
+
+        for(int i=0; i<fd_count; i++){
+            if (pfds[i].revents & POLLIN) {
+                if (bs_sockfd == pfds[i].fd){
+                    bzero(buff, MAXLEN);
+                    int nbytes = recv(bs_sockfd, buff, sizeof buff, 0);
+                    printf("Received: %s", buff);
+
+                    printf("Forwarding message to read-only client: %s\n", buff);
+                    send(ro_cli_sockfd, buff, nbytes, 0);
+                }
+                else if (cli_sockfd == pfds[i].fd){
+                    bzero(buff, MAXLEN);
+                    int nbytes = recv(cli_sockfd, buff, sizeof buff, 0);
+                    printf("Received: %s", buff);
+
+                    printf("Forwarding message to read-only client: %s", buff);
+                    send(ro_cli_sockfd, buff, nbytes, 0);
+                    printf("Forwarding message to another server: %s\n", buff);
+                    send(bs_sockfd, buff, nbytes, 0);
+                }
+            }
+        }
+    }
 
 
     close(bs_sockfd);
