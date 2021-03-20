@@ -8,6 +8,9 @@
 #include <sys/types.h> 
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <poll.h>
+#include <sys/wait.h>
+#include <signal.h>
 
 #define PORT "20000"
 #define PORT_BS "20082"    //port between servers
@@ -105,6 +108,10 @@ int main(int agrc, char *argv[]){
     int ro_cli_sockfd;    //read-only client
     int cli_sockfd;    //regular client
 
+    int fd_count = 0;
+    int fd_size = 5;
+    struct pollfd *pfds = malloc(sizeof *pfds * fd_size);
+
 
     if (-1 == (bs_sockfd = createSocket(PORT_BS))){
         if (-1 != (bs_clientfd = connectToSndServer()))
@@ -135,6 +142,14 @@ int main(int agrc, char *argv[]){
     printf("Received: %s\n", buff);
     printf("Forwarding message: %s\n", buff);
     send(ro_cli_sockfd, buff, MAXLEN, 0);
+
+    pfds[0].fd = cli_sockfd;
+    pfds[0].events = POLLIN;
+    fd_count = 1;
+
+    pfds[0].fd = bs_sockfd;
+    pfds[0].events = POLLIN;
+    fd_count = 2;
 
 
     close(bs_sockfd);
